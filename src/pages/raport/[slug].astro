@@ -1,134 +1,136 @@
 ---
-import { getCollection, type CollectionEntry } from 'astro:content';
+// src/pages/raport/[slug].astro
+import ReportLayout from '../../layouts/ReportLayout.astro';
 
-// 1. Generowanie ścieżek statycznych dla wszystkich plików Markdown z kolekcji
+// 1. Wygenerowanie statycznych ścieżek dla podstron pSEO (Astro SSG)
 export async function getStaticPaths() {
-  const reports = await getCollection('city-reports');
-  
-  return reports.map((entry: CollectionEntry<'city-reports'>) => ({
-    params: { slug: entry.slug },
-    props: { entry },
+  // Przykładowy zestaw danych - w docelowym rozwiązaniu możesz pobierać te dane 
+  // z lokalnych plików JSON/Markdown lub bazy danych wygenerowanej przez skrypt
+  const reports = [
+    {
+      slug: 'senior-dotnet-krakow',
+      title: 'Zarobki Senior .NET Developer w Krakowie',
+      description: 'Aktualny raport wynagrodzeń dla stanowiska Senior .NET Developer w Krakowie. Sprawdź medianę, widełki B2B oraz UoP na rok 2026.',
+      cityName: 'Kraków',
+      roleName: 'Senior .NET Developer',
+      updatedAt: '2026-08-01',
+      stats: {
+        b2bMedian: '24 000 PLN',
+        b2bRange: '20 000 - 28 000 PLN + VAT',
+        uopMedian: '17 500 PLN',
+        uopRange: '14 500 - 21 000 PLN brutto',
+        sampleSize: 142
+      },
+      skills: ['C#', '.NET 8/9', 'AWS / Azure', 'Microservices', 'Docker / Kubernetes']
+    },
+    {
+      slug: 'mid-devops-warszawa',
+      title: 'Zarobki Mid DevOps Engineer w Warszawie',
+      description: 'Sprawdź ile zarabia Mid DevOps Engineer w Warszawie. Tabela stawek B2B i UoP, wymagane technologie oraz statystyki rynku.',
+      cityName: 'Warszawa',
+      roleName: 'Mid DevOps Engineer',
+      updatedAt: '2026-08-03',
+      stats: {
+        b2bMedian: '21 500 PLN',
+        b2bRange: '18 000 - 25 000 PLN + VAT',
+        uopMedian: '15 000 PLN',
+        uopRange: '12 500 - 18 000 PLN brutto',
+        sampleSize: 98
+      },
+      skills: ['Terraform', 'Kubernetes', 'CI/CD', 'AWS', 'Linux / Bash']
+    }
+  ];
+
+  return reports.map((report) => ({
+    params: { slug: report.slug },
+    props: { report },
   }));
 }
 
-// 2. Jawna definicja typów dla właściwości (Props) przekazywanych do komponentu
-interface Props {
-  entry: CollectionEntry<'city-reports'>;
-}
-
-const { entry } = Astro.props;
-const { Content } = await entry.render();
-const { data } = entry;
-
-// 3. Przygotowanie danych strukturalnych JSON-LD pod Google Schema.org
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": data.title,
-  "description": data.description,
-  "dateModified": data.updatedAt,
-  "author": {
-    "@type": "Organization",
-    "name": "Katalog Zarobków IT"
-  },
-  "about": {
-    "@type": "Place",
-    "name": data.city,
-    "address": {
-      "@type": "PostalAddress",
-      "addressCountry": data.country
-    }
-  }
-};
+const { report } = Astro.props;
 ---
 
-<!DOCTYPE html>
-<html lang="pl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{data.title}</title>
-    <meta name="description" content={data.description} />
+<ReportLayout
+  title={report.title}
+  description={report.description}
+  cityName={report.cityName}
+  roleName={report.roleName}
+  updatedAt={report.updatedAt}
+>
+  <!-- Sekcja slot="summary" wstawiana pod nagłówkiem H1 -->
+  <div slot="summary" class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+    <p class="text-lg leading-relaxed text-slate-700 dark:text-slate-300">
+      Na podstawie analizy <strong class="text-indigo-600 dark:text-indigo-400">{report.stats.sampleSize} zweryfikowanych ofert pracy</strong> oraz zgłoszeń z lokalnego rynku w mieście <strong>{report.cityName}</strong>, mediana wynagrodzenia dla roli <strong>{report.roleName}</strong> wynosi obecnie <strong>{report.stats.b2bMedian} na B2B</strong>.
+    </p>
+  </div>
 
-    {/* Automatyczne wstrzykiwanie danych strukturalnych JSON-LD dla Google */}
-    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-
-    <style>
-      body { 
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; 
-        max-width: 800px; 
-        margin: 0 auto; 
-        padding: 2rem; 
-        line-height: 1.6; 
-        color: #18181b; 
-        background-color: #ffffff;
-      }
-      header {
-        margin-bottom: 2rem;
-      }
-      header a {
-        color: #2563eb;
-        text-decoration: none;
-        font-weight: 500;
-      }
-      header a:hover {
-        text-decoration: underline;
-      }
-      .meta-box { 
-        background: #f4f4f5; 
-        border-radius: 8px; 
-        padding: 1.25rem; 
-        margin-bottom: 2rem; 
-        border-left: 4px solid #2563eb; 
-      }
-      .meta-box p {
-        margin: 0.4rem 0;
-      }
-      .ad-banner { 
-        background: #fef3c7; 
-        border: 1px dashed #d97706; 
-        border-radius: 6px;
-        padding: 1.25rem; 
-        text-align: center; 
-        margin: 2.5rem 0; 
-        font-weight: 600; 
-        color: #92400e;
-      }
-      main table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 1.5rem 0;
-      }
-      main th, main td {
-        border: 1px solid #e4e4e7;
-        padding: 0.75rem;
-        text-align: left;
-      }
-      main th {
-        background-color: #f4f4f5;
-      }
-    </style>
-  </head>
-  <body>
-    <header>
-      <a href="/">← Powrót do katalogu głównego</a>
-    </header>
-
-    <main>
-      <!-- Pasek Meta z danymi strukturalnymi z Frontmattera -->
-      <div class="meta-box">
-        <p><strong>Lokalizacja:</strong> {data.city}, {data.country}</p>
-        <p><strong>Średnie wynagrodzenie:</strong> ${data.avg_salary_usd} USD / mies.</p>
-        <p><small>Ostatnia aktualizacja: {data.updatedAt}</small></p>
+  <!-- Główna treść artykułu / Tabela wynagrodzeń -->
+  <div class="space-y-8">
+    <section>
+      <h2 class="text-2xl font-bold mb-4">Podsumowanie stawek (B2B vs UoP)</h2>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse bg-white dark:bg-slate-900 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800">
+          <thead class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+            <tr>
+              <th class="p-3 border-b border-slate-200 dark:border-slate-700">Forma umowy</th>
+              <th class="p-3 border-b border-slate-200 dark:border-slate-700">Mediana (50 percentile)</th>
+              <th class="p-3 border-b border-slate-200 dark:border-slate-700">Typowe widełki (25-75 percentile)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
+            <tr>
+              <td class="p-3 font-semibold text-slate-900 dark:text-slate-100">B2B (netto + VAT)</td>
+              <td class="p-3 font-bold text-emerald-600 dark:text-emerald-400">{report.stats.b2bMedian}</td>
+              <td class="p-3 text-slate-600 dark:text-slate-300">{report.stats.b2bRange}</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-slate-900 dark:text-slate-100">Umowa o Pracę (brutto)</td>
+              <td class="p-3 font-bold text-indigo-600 dark:text-indigo-400">{report.stats.uopMedian}</td>
+              <td class="p-3 text-slate-600 dark:text-slate-300">{report.stats.uopRange}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+    </section>
 
-      <!-- Wyrenderowana treść Markdown -->
-      <Content />
-
-      <!-- MONETYZACJA: Miejsce na baner reklamowy lub link afiliacyjny -->
-      <div class="ad-banner">
-        <span>Pracujesz zdalnie z {data.country}? Sprawdź zalecane konta wielowalutowe i rozwiązania B2B.</span>
+    <!-- Sekcja umiejętności / Stack technologiczny -->
+    <section>
+      <h2 class="text-2xl font-bold mb-3">Najczęściej wymagane technologie w {report.cityName}</h2>
+      <div class="flex flex-wrap gap-2">
+        {report.skills.map((skill) => (
+          <span class="px-3 py-1 bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-full text-sm font-medium">
+            {skill}
+          </span>
+        ))}
       </div>
-    </main>
-  </body>
-</html>
+    </section>
+  </div>
+
+  <!-- Sekcja slot="faq" umieszczana na dole przed stopką -->
+  <div slot="faq" class="space-y-6">
+    <h2 class="text-2xl font-bold border-b border-slate-200 dark:border-slate-800 pb-2">Często zadawane pytania (FAQ)</h2>
+    
+    <div class="space-y-4">
+      <details class="group bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
+        <summary class="font-semibold cursor-pointer list-none flex justify-between items-center">
+          <span>Czy stawki B2B obejmują płatny urlop?</span>
+          <span class="transition group-open:rotate-180">&darr;</span>
+        </summary>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          Około 65% ofert B2B dla stanowiska {report.roleName} w lokalizacji {report.cityName} oferuje płatne dni wolne (zazwyczaj 20-26 dni w roku) w ramach kontraktu.
+        </p>
+      </details>
+
+      <details class="group bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
+        <summary class="font-semibold cursor-pointer list-none flex justify-between items-center">
+          <span>Jaka jest różnica między pracą zdalną a hybrydową w {report.cityName}?</span>
+          <span class="transition group-open:rotate-180">&darr;</span>
+        </summary>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          Ofert hybrydowe z biurem w {report.cityName} oferują średnio o 5-10% wyższe stawki podstawowe w porównaniu do pełnej pracy zdalnej, aby zrekompensować koszty dojazdów.
+        </p>
+      </details>
+    </div>
+  </div>
+</ReportLayout>

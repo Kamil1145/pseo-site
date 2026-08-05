@@ -1,0 +1,191 @@
+---
+// src/layouts/ReportLayout.astro
+import '../styles/global.css'; // Zakładamy obecność skryptu/stylów Tailwind lub CSS
+
+interface Props {
+  title: string;
+  description: string;
+  cityName: string;
+  roleName: string;
+  updatedAt?: string;
+}
+
+const { 
+  title, 
+  description, 
+  cityName, 
+  roleName, 
+  updatedAt = new Date().toISOString().split('T')[0] 
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://devsalaries.co');
+const ogImageUrl = new URL(`/og/${Astro.params.slug || 'default'}.png`, Astro.site || 'https://devsalaries.co');
+
+// Schema.org dla danych strukturalnych Google
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": title,
+  "description": description,
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": canonicalURL.toString()
+  },
+  "dateModified": updatedAt,
+  "author": {
+    "@type": "Organization",
+    "name": "DevSalaries",
+    "url": "https://devsalaries.co"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "DevSalaries",
+    "url": "https://devsalaries.co"
+  }
+};
+---
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- Podstawowe meta tagi -->
+  <title>{title} | DevSalaries.co</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonicalURL} />
+  
+  <!-- Open Graph / Facebook / LinkedIn -->
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content={canonicalURL} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={ogImageUrl} />
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content={canonicalURL} />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImageUrl} />
+
+  <!-- Preconnect dla wydań wydajnościowych (Core Web Vitals) -->
+  <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+  
+  <!-- Google AdSense (Zamień ca-pub-XXXXXXXXXXXXXXXX na swój identyfikator) -->
+  <script 
+    async 
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" 
+    crossorigin="anonymous">
+  </script>
+
+  <!-- Dane strukturalne Schema.org -->
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+</head>
+
+<body class="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col dark:bg-slate-950 dark:text-slate-100">
+  
+  <!-- Nawigacja / Nagłówek -->
+  <header class="border-b border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800">
+    <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+      <a href="/" class="font-bold text-xl tracking-tight text-indigo-600 dark:text-indigo-400">
+        devsalaries<span class="text-slate-400">.co</span>
+      </a>
+      <nav class="text-sm font-medium text-slate-600 dark:text-slate-400">
+        <a href="/" class="hover:text-indigo-600 transition-colors">Raporty wynagrodzeń</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Główna zawartość strony -->
+  <main class="flex-grow max-w-4xl w-full mx-auto px-4 py-8">
+    
+    <!-- Sekcja H1 i metadane -->
+    <header class="mb-6">
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">
+        {title}
+      </h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400">
+        Ostatnia aktualizacja danych: <time datetime={updatedAt}>{updatedAt}</time> &bull; Lokalizacja: <span class="font-semibold text-slate-700 dark:text-slate-300">{cityName}</span>
+      </p>
+    </header>
+
+    <!-- Krótkie wprowadzenie / Wartość unikalna -->
+    <section class="prose dark:prose-invert max-w-none mb-6">
+      <slot name="summary" />
+    </section>
+
+    <!-- REKLAMA #1: Top In-Article (Ochrona CLS dzięki min-height) -->
+    <div class="ad-container my-6 text-center min-h-[280px] bg-slate-100 dark:bg-slate-900 rounded-lg flex items-center justify-center p-2">
+      <ins class="adsbygoogle"
+           style="display:block; text-align:center;"
+           data-ad-layout="in-article"
+           data-ad-format="fluid"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="1111111111"></ins>
+      <script is:inline>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
+
+    <!-- Główna treść raportu (Tabele / Wykresy / Statystyki) -->
+    <article class="prose dark:prose-invert max-w-none my-8">
+      <slot />
+    </article>
+
+    <!-- WIDGET AFILIACYJNY B2B / Księgowość -->
+    <aside class="my-8 p-6 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-slate-900 dark:to-indigo-950/40 rounded-xl border border-indigo-100 dark:border-indigo-900/50">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Dla samozatrudnionych B2B</span>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-1">Rozliczasz kontrakt w {cityName}?</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">
+            Oblicz dokładny zysk "na rękę" po odliczeniu ryczałtu/liniowego oraz kosztów księgowości.
+          </p>
+        </div>
+        <a 
+          href="https://example.com/affiliate-link" 
+          target="_blank" 
+          rel="sponsored nofollow" 
+          class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg transition-colors shadow-sm whitespace-nowrap"
+        >
+          Sprawdź kalkulator B2B &rarr;
+        </a>
+      </div>
+    </aside>
+
+    <!-- REKLAMA #2: Mid Content -->
+    <div class="ad-container my-8 text-center min-h-[250px] bg-slate-100 dark:bg-slate-900 rounded-lg flex items-center justify-center p-2">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="2222222222"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script is:inline>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
+
+    <!-- Sekcja dolna (np. FAQ / Porównania) -->
+    <section class="prose dark:prose-invert max-w-none my-8">
+      <slot name="faq" />
+    </section>
+
+    <!-- Informacja o zastrzeżeniach / Afiliacji (Wymóg prawny i Google E-E-A-T) -->
+    <p class="text-xs text-slate-400 dark:text-slate-500 mt-12 border-t border-slate-200 dark:border-slate-800 pt-4">
+      * Raporty generowane są na podstawie zagregowanych i anonimowych ofert pracy oraz zgłoszeń społeczności dla roli {roleName}. Niektóre odnośniki w serwisie mają charakter partnerski (afiliacyjny) – skorzystanie z nich może przynieść serwisowi prowizję bez ponoszenia dodatkowych kosztów przez Ciebie.
+    </p>
+
+  </main>
+
+  <!-- Stopka -->
+  <footer class="border-t border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800 py-6 mt-12">
+    <div class="max-w-5xl mx-auto px-4 text-center text-xs text-slate-500 dark:text-slate-400">
+      <p>&copy; {new Date().getFullYear()} devsalaries.co &bull; Wszystkie prawa zastrzeżone.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
