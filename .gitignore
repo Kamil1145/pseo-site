@@ -1,24 +1,38 @@
-# build output
+# Moduły i zależności
+node_modules/
+.pnpm-store/
+
+# Pliki budowania i wyjścia Astro
 dist/
-# generated types
 .astro/
 
-# dependencies
-node_modules/
-
-# logs
+# Pamięć podręczna i logi
+.cache/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-
-# environment variables
+# Środowisko i pliki konfiguracyjne (klucze API, secrets)
 .env
-.env.production
+.env.*
+!.env.example
 
-# macOS-specific files
+# Narzędzia systemowe i edytory (Windows / macOS / VS Code)
 .DS_Store
-
-# jetbrains setting folder
+Thumbs.db
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
 .idea/
+
+# Jeśli używasz projektu C# w tym samym repozytorium (Generator/Scraper)
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Tymczasowe dane wyjściowe z generatora pSEO (opcjonalnie, jeśli generujesz pliki dynamicznie przed buildem)
+# tmp_data/
+# *.log

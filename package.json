@@ -12,6 +12,11 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
     "astro": "^7.1.6"
+  },
+  "devDependencies": {
+    "@astrojs/ts-plugin": "^1.10.10",
+    "typescript": "^7.0.2"
   }
 }
