@@ -1,15 +1,3 @@
-<script type="application/ld+json" set:html={JSON.stringify({
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": pageTitle,
-  "description": report.seoDescription,
-  "dateModified": report.updatedAt,
-  "author": {
-    "@type": "Organization",
-    "name": "Twoja Marka IT"
-  }
-})} />
-
 ---
 // src/pages/raport/[slug].astro
 import ReportLayout from "../../layouts/ReportLayout.astro";
@@ -31,19 +19,20 @@ export interface ReportData {
 }
 
 export async function getStaticPaths() {
-  const reportFiles = import.meta.glob<{ default?: ReportData } | ReportData>(
+  // Czyste typowanie odporne na parser Astro
+  const reportFiles = import.meta.glob<Record<string, any>>(
     "../../data/reports/*.json",
     { eager: true }
   );
 
   return Object.entries(reportFiles).map(([filePath, module]) => {
-    const report: ReportData = 'default' in module ? module.default! : module;
+    const reportData = (module && "default" in module ? module.default : module) as ReportData;
     const fallbackSlug = filePath.split("/").pop()?.replace(".json", "") || "";
-    const slug = report?.slug || fallbackSlug;
+    const slug = reportData?.slug || fallbackSlug;
 
     return {
       params: { slug },
-      props: { report },
+      props: { report: reportData },
     };
   });
 }
@@ -54,12 +43,11 @@ interface Props {
 
 const { report } = Astro.props;
 
-// Bezpieczne zabezpieczenie przed pustym obiektem
 if (!report) {
   throw new Error("Nie znaleziono danych dla raportu.");
 }
 
-// Pomocnicze formatowanie kwot oraz obliczanie szacowanej mediany ze średniej min/max
+// Formatowanie kwot i obliczanie mediany
 const formatPLN = (val: number) => `${val.toLocaleString("pl-PL")} PLN`;
 const calculateMedian = (min: number, max: number) => formatPLN(Math.round((min + max) / 2));
 
@@ -70,6 +58,19 @@ const uopMedianFormatted = calculateMedian(report.uop.min, report.uop.max);
 const uopRangeFormatted = `${formatPLN(report.uop.min)} - ${formatPLN(report.uop.max)} brutto`;
 
 const pageTitle = `Zarobki ${report.role} w ${report.city} (${report.updatedAt})`;
+
+// Obiekt danych strukturalnych JSON-LD
+const jsonLdData = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": pageTitle,
+  "description": report.seoDescription,
+  "dateModified": report.updatedAt,
+  "author": {
+    "@type": "Organization",
+    "name": "Twoja Marka IT"
+  }
+};
 ---
 
 <ReportLayout
@@ -79,6 +80,9 @@ const pageTitle = `Zarobki ${report.role} w ${report.city} (${report.updatedAt})
   roleName={report.role}
   updatedAt={report.updatedAt}
 >
+  <!-- Dane strukturalne Schema.org pod SEO -->
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLdData)} />
+
   <!-- Podsumowanie raportu -->
   <div slot="summary" class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
     <p class="text-lg leading-relaxed text-slate-700 dark:text-slate-300">
@@ -128,7 +132,7 @@ const pageTitle = `Zarobki ${report.role} w ${report.city} (${report.updatedAt})
           <span class="transition group-open:rotate-180">&darr;</span>
         </summary>
         <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-          Większość kontraktów B2B na tym stanowisku w regioniie nie zawiera wbudowanego płatnego urlopu (B2B typu "unpaid time off"), jednak część firm oferuje pakiety z 20-26 dniami płatnymi w roku kosztem minimalnie niższej stawki godzinowej.
+          Większość kontraktów B2B na tym stanowisku w tym regionie nie zawiera wbudowanego płatnego urlopu, jednak część firm oferuje pakiety z 20-26 dniami płatnymi w roku kosztem minimalnie niższej stawki godzinowej.
         </p>
       </details>
     </div>
