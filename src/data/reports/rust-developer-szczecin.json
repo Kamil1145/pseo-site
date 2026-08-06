@@ -4,12 +4,12 @@
   "city": "Szczecin",
   "updatedAt": "2026-08-06",
   "b2b": {
-    "min": 20000,
-    "max": 32000
+    "min": 22000,
+    "max": 35000
   },
   "uop": {
-    "min": 15000,
-    "max": 24000
+    "min": 17000,
+    "max": 27000
   },
-  "seoDescription": "Zarobki Rust Developer w Szczecinie w 2026 roku. Sprawdź aktualne stawki B2B oraz UoP dla programistów Rust w tym regionie."
+  "seoDescription": "Sprawdź zarobki na stanowisku Rust Developer w Szczecinie w 2026 roku. Poznaj stawki B2B oraz UOP dla specjalistów języka Rust."
 }
