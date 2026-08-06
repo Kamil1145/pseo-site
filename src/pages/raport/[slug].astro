@@ -2,49 +2,21 @@
 // src/pages/raport/[slug].astro
 import ReportLayout from "../../layouts/ReportLayout.astro";
 
-// 1. Wygenerowanie statycznych ścieżek dla podstron pSEO (Astro SSG)
 export async function getStaticPaths() {
-  // Przykładowy zestaw danych - w docelowym rozwiązaniu możesz pobierać te dane 
-  // z lokalnych plików JSON/Markdown lub bazy danych wygenerowanej przez skrypt
-  const reports = [
-    {
-      slug: 'senior-dotnet-krakow',
-      title: 'Zarobki Senior .NET Developer w Krakowie',
-      description: 'Aktualny raport wynagrodzeń dla stanowiska Senior .NET Developer w Krakowie. Sprawdź medianę, widełki B2B oraz UoP na rok 2026.',
-      cityName: 'Kraków',
-      roleName: 'Senior .NET Developer',
-      updatedAt: '2026-08-01',
-      stats: {
-        b2bMedian: '24 000 PLN',
-        b2bRange: '20 000 - 28 000 PLN + VAT',
-        uopMedian: '17 500 PLN',
-        uopRange: '14 500 - 21 000 PLN brutto',
-        sampleSize: 142
-      },
-      skills: ['C#', '.NET 8/9', 'AWS / Azure', 'Microservices', 'Docker / Kubernetes']
-    },
-    {
-      slug: 'mid-devops-warszawa',
-      title: 'Zarobki Mid DevOps Engineer w Warszawie',
-      description: 'Sprawdź ile zarabia Mid DevOps Engineer w Warszawie. Tabela stawek B2B i UoP, wymagane technologie oraz statystyki rynku.',
-      cityName: 'Warszawa',
-      roleName: 'Mid DevOps Engineer',
-      updatedAt: '2026-08-03',
-      stats: {
-        b2bMedian: '21 500 PLN',
-        b2bRange: '18 000 - 25 000 PLN + VAT',
-        uopMedian: '15 000 PLN',
-        uopRange: '12 500 - 18 000 PLN brutto',
-        sampleSize: 98
-      },
-      skills: ['Terraform', 'Kubernetes', 'CI/CD', 'AWS', 'Linux / Bash']
-    }
-  ];
+  // Dynamiczne importowanie wszystkich plików .json w folderze src/data/reports/
+  const reportFiles = import.meta.glob<{ default: any }>("../../data/reports/*.json", { eager: true });
 
-  return reports.map((report) => ({
-    params: { slug: report.slug },
-    props: { report },
-  }));
+  return Object.entries(reportFiles).map(([path, module]) => {
+    const report = module.default;
+    
+    // Jeśli plik nie ma pola 'slug', wyciągamy go z nazwy pliku
+    const slug = report.slug || path.split("/").pop()?.replace(".json", "");
+
+    return {
+      params: { slug },
+      props: { report },
+    };
+  });
 }
 
 const { report } = Astro.props;
@@ -57,18 +29,15 @@ const { report } = Astro.props;
   roleName={report.roleName}
   updatedAt={report.updatedAt}
 >
-  <!-- Sekcja slot="summary" wstawiana pod nagłówkiem H1 -->
   <div slot="summary" class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
     <p class="text-lg leading-relaxed text-slate-700 dark:text-slate-300">
       Na podstawie analizy <strong class="text-indigo-600 dark:text-indigo-400">{report.stats.sampleSize} zweryfikowanych ofert pracy</strong> oraz zgłoszeń z lokalnego rynku w mieście <strong>{report.cityName}</strong>, mediana wynagrodzenia dla roli <strong>{report.roleName}</strong> wynosi obecnie <strong>{report.stats.b2bMedian} na B2B</strong>.
     </p>
   </div>
 
-  <!-- Główna treść artykułu / Tabela wynagrodzeń -->
   <div class="space-y-8">
     <section>
       <h2 class="text-2xl font-bold mb-4">Podsumowanie stawek (B2B vs UoP)</h2>
-      
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse bg-white dark:bg-slate-900 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800">
           <thead class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
@@ -94,11 +63,10 @@ const { report } = Astro.props;
       </div>
     </section>
 
-    <!-- Sekcja umiejętności / Stack technologiczny -->
     <section>
       <h2 class="text-2xl font-bold mb-3">Najczęściej wymagane technologie w {report.cityName}</h2>
       <div class="flex flex-wrap gap-2">
-        {report.skills.map((skill) => (
+        {report.skills.map((skill: string) => (
           <span class="px-3 py-1 bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-full text-sm font-medium">
             {skill}
           </span>
@@ -107,10 +75,8 @@ const { report } = Astro.props;
     </section>
   </div>
 
-  <!-- Sekcja slot="faq" umieszczana na dole przed stopką -->
   <div slot="faq" class="space-y-6">
     <h2 class="text-2xl font-bold border-b border-slate-200 dark:border-slate-800 pb-2">Często zadawane pytania (FAQ)</h2>
-    
     <div class="space-y-4">
       <details class="group bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
         <summary class="font-semibold cursor-pointer list-none flex justify-between items-center">
@@ -119,16 +85,6 @@ const { report } = Astro.props;
         </summary>
         <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
           Około 65% ofert B2B dla stanowiska {report.roleName} w lokalizacji {report.cityName} oferuje płatne dni wolne (zazwyczaj 20-26 dni w roku) w ramach kontraktu.
-        </p>
-      </details>
-
-      <details class="group bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
-        <summary class="font-semibold cursor-pointer list-none flex justify-between items-center">
-          <span>Jaka jest różnica między pracą zdalną a hybrydową w {report.cityName}?</span>
-          <span class="transition group-open:rotate-180">&darr;</span>
-        </summary>
-        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-          Ofert hybrydowe z biurem w {report.cityName} oferują średnio o 5-10% wyższe stawki podstawowe w porównaniu do pełnej pracy zdalnej, aby zrekompensować koszty dojazdów.
         </p>
       </details>
     </div>
