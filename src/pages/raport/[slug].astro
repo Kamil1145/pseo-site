@@ -2,21 +2,44 @@
 // src/pages/raport/[slug].astro
 import ReportLayout from "../../layouts/ReportLayout.astro";
 
-export async function getStaticPaths() {
-  // Dynamiczne importowanie wszystkich plików .json w folderze src/data/reports/
-  const reportFiles = import.meta.glob<{ default: any }>("../../data/reports/*.json", { eager: true });
+// Interfejs opisujący strukturę pojedynczego pliku raportu
+export interface ReportData {
+  slug?: string;
+  title: string;
+  description: string;
+  cityName: string;
+  roleName: string;
+  updatedAt: string;
+  stats: {
+    b2bMedian: string;
+    b2bRange: string;
+    uopMedian: string;
+    uopRange: string;
+    sampleSize: number;
+  };
+  skills: string[];
+}
 
-  return Object.entries(reportFiles).map(([path, module]) => {
+export async function getStaticPaths() {
+  // Automatyczne pobieranie wszystkich plików .json z katalogu src/data/reports/
+  const reportFiles = import.meta.glob<{ default: ReportData }>("../../data/reports/*.json", { eager: true });
+
+  return Object.entries(reportFiles).map(([filePath, module]) => {
     const report = module.default;
     
-    // Jeśli plik nie ma pola 'slug', wyciągamy go z nazwy pliku
-    const slug = report.slug || path.split("/").pop()?.replace(".json", "");
+    // Jeśli w JSON nie podano pola 'slug', użyj nazwy pliku bez rozszerzenia
+    const fallbackSlug = filePath.split("/").pop()?.replace(".json", "") || "";
+    const slug = report.slug || fallbackSlug;
 
     return {
       params: { slug },
       props: { report },
     };
   });
+}
+
+interface Props {
+  report: ReportData;
 }
 
 const { report } = Astro.props;
@@ -29,15 +52,18 @@ const { report } = Astro.props;
   roleName={report.roleName}
   updatedAt={report.updatedAt}
 >
+  <!-- Podsumowanie raportu -->
   <div slot="summary" class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
     <p class="text-lg leading-relaxed text-slate-700 dark:text-slate-300">
       Na podstawie analizy <strong class="text-indigo-600 dark:text-indigo-400">{report.stats.sampleSize} zweryfikowanych ofert pracy</strong> oraz zgłoszeń z lokalnego rynku w mieście <strong>{report.cityName}</strong>, mediana wynagrodzenia dla roli <strong>{report.roleName}</strong> wynosi obecnie <strong>{report.stats.b2bMedian} na B2B</strong>.
     </p>
   </div>
 
+  <!-- Główna zawartość: Stawki oraz Wymagania -->
   <div class="space-y-8">
     <section>
       <h2 class="text-2xl font-bold mb-4">Podsumowanie stawek (B2B vs UoP)</h2>
+      
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse bg-white dark:bg-slate-900 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800">
           <thead class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
@@ -66,7 +92,7 @@ const { report } = Astro.props;
     <section>
       <h2 class="text-2xl font-bold mb-3">Najczęściej wymagane technologie w {report.cityName}</h2>
       <div class="flex flex-wrap gap-2">
-        {report.skills.map((skill: string) => (
+        {report.skills.map((skill) => (
           <span class="px-3 py-1 bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-full text-sm font-medium">
             {skill}
           </span>
@@ -75,8 +101,10 @@ const { report } = Astro.props;
     </section>
   </div>
 
+  <!-- Sekcja FAQ -->
   <div slot="faq" class="space-y-6">
     <h2 class="text-2xl font-bold border-b border-slate-200 dark:border-slate-800 pb-2">Często zadawane pytania (FAQ)</h2>
+    
     <div class="space-y-4">
       <details class="group bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
         <summary class="font-semibold cursor-pointer list-none flex justify-between items-center">
@@ -85,6 +113,16 @@ const { report } = Astro.props;
         </summary>
         <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
           Około 65% ofert B2B dla stanowiska {report.roleName} w lokalizacji {report.cityName} oferuje płatne dni wolne (zazwyczaj 20-26 dni w roku) w ramach kontraktu.
+        </p>
+      </details>
+
+      <details class="group bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
+        <summary class="font-semibold cursor-pointer list-none flex justify-between items-center">
+          <span>Jaka jest różnica między pracą zdalną a hybrydową w {report.cityName}?</span>
+          <span class="transition group-open:rotate-180">&darr;</span>
+        </summary>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          Oferty hybrydowe z biurem w {report.cityName} oferują średnio o 5-10% wyższe stawki podstawowe w porównaniu do pełnej pracy zdalnej, aby zrekompensować koszty dojazdów.
         </p>
       </details>
     </div>
