@@ -17,7 +17,7 @@ const reportFiles = import.meta.glob<{ default?: ReportData } | ReportData>(
 const reports = Object.values(reportFiles).map((mod) => ('default' in mod ? mod.default! : mod));
 ---
 
-<Layout title="Raporty Zarobków IT w Polsce">
+<ReportLayout title="Raporty Zarobków IT w Polsce">
   <main class="max-w-4xl mx-auto px-4 py-10">
     <h1 class="text-3xl font-bold mb-6">Raporty Wynagrodzeń IT</h1>
     <div class="grid gap-4 md:grid-cols-2">
@@ -36,4 +36,4 @@ const reports = Object.values(reportFiles).map((mod) => ('default' in mod ? mod.
       ))}
     </div>
   </main>
-</Layout>
+</ReportLayout>
