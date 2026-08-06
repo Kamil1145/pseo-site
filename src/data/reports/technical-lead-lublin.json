@@ -4,12 +4,12 @@
   "city": "Lublin",
   "updatedAt": "2026-08-06",
   "b2b": {
-    "min": 18000,
+    "min": 20000,
     "max": 28000
   },
   "uop": {
-    "min": 14000,
-    "max": 22000
+    "min": 15000,
+    "max": 21000
   },
-  "seoDescription": "Sprawdź aktualne zarobki na stanowisku Technical Lead w Lublinie na rok 2026. Poznaj stawki B2B oraz UOP dla doświadczonych liderów technicznych."
+  "seoDescription": "Sprawdź zarobki na stanowisku Technical Lead w Lublinie na rok 2026. Dowiedz się, ile zarabiają specjaliści B2B oraz na umowie o pracę (UoP)."
 }
