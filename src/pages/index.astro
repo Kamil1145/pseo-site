@@ -1,84 +1,39 @@
 ---
-import { getCollection, type CollectionEntry } from 'astro:content';
+// src/pages/raport/index.astro
+import Layout from "../../layouts/Layout.astro";
 
-// Pobieramy wszystkie pliki .md z kolekcji 'city-reports'
-const allReports = await getCollection('city-reports');
+interface ReportData {
+  slug: string;
+  role: string;
+  city: string;
+  b2b: { min: number; max: number };
+}
+
+const reportFiles = import.meta.glob<{ default?: ReportData } | ReportData>(
+  "../../data/reports/*.json",
+  { eager: true }
+);
+
+const reports = Object.values(reportFiles).map((mod) => ('default' in mod ? mod.default! : mod));
 ---
 
-<!DOCTYPE html>
-<html lang="pl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Zestawienie Zarobków Programistów na Świecie | BAZA PSEO</title>
-    <meta name="description" content="Przeglądaj raporty dotyczące zarobków, podatków i kosztów życia dla programistów w ponad 500 miastach na całym świecie." />
-    <style>
-      body {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 2rem;
-        color: #18181b;
-      }
-      h1 {
-        font-size: 2.25rem;
-        margin-bottom: 0.5rem;
-      }
-      .subtitle {
-        color: #71717a;
-        margin-bottom: 2rem;
-      }
-      .report-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 1rem;
-        list-style: none;
-        padding: 0;
-      }
-      .report-card {
-        border: 1px solid #e4e4e7;
-        border-radius: 8px;
-        padding: 1rem;
-        transition: border-color 0.2s ease, transform 0.2s ease;
-      }
-      .report-card:hover {
-        border-color: #2563eb;
-        transform: translateY(-2px);
-      }
-      .report-card a {
-        text-decoration: none;
-        color: inherit;
-        display: block;
-      }
-      .report-card h2 {
-        font-size: 1.1rem;
-        margin: 0 0 0.5rem 0;
-        color: #2563eb;
-      }
-      .report-card p {
-        margin: 0;
-        font-size: 0.9rem;
-        color: #52525b;
-      }
-    </style>
-  </head>
-  <body>
-    <header>
-      <h1>Katalog Raportów IT</h1>
-      <p class="subtitle">Zarobki B2B, koszty życia i podatki dla Senior Inżynierów Oprogramowania</p>
-    </header>
-
-    <main>
-      <ul class="report-grid">
-        {allReports.map((report: CollectionEntry<'city-reports'>) => (
-          <li class="report-card">
-            <A href={`/raport/${report.slug}`}>
-              <h2>{report.data.city}, {report.data.country}</h2>
-              <p>Śr. zarobki: <strong>${report.data.avg_salary_usd} USD</strong></p>
-            </A>
-          </li>
-        ))}
-      </ul>
-    </main>
-  </body>
-</html>
+<Layout title="Raporty Zarobków IT w Polsce">
+  <main class="max-w-4xl mx-auto px-4 py-10">
+    <h1 class="text-3xl font-bold mb-6">Raporty Wynagrodzeń IT</h1>
+    <div class="grid gap-4 md:grid-cols-2">
+      {reports.map((report) => (
+        <a 
+          href={`/raport/${report.slug}`}
+          class="block p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg hover:border-indigo-500 transition shadow-sm"
+        >
+          <h2 class="font-bold text-lg text-slate-900 dark:text-slate-100">
+            {report.role} w {report.city}
+          </h2>
+          <p class="text-sm text-slate-500 mt-1">
+            B2B: {report.b2b.min.toLocaleString()} - {report.b2b.max.toLocaleString()} PLN
+          </p>
+        </a>
+      ))}
+    </div>
+  </main>
+</Layout>

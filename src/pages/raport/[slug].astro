@@ -1,3 +1,15 @@
+<script type="application/ld+json" set:html={JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": pageTitle,
+  "description": report.seoDescription,
+  "dateModified": report.updatedAt,
+  "author": {
+    "@type": "Organization",
+    "name": "Twoja Marka IT"
+  }
+})} />
+
 ---
 // src/pages/raport/[slug].astro
 import ReportLayout from "../../layouts/ReportLayout.astro";
