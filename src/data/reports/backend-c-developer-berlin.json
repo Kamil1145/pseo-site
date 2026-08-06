@@ -4,12 +4,12 @@
   "city": "Berlin",
   "updatedAt": "2026-08-06",
   "b2b": {
-    "min": 75000,
-    "max": 115000
+    "min": 85000,
+    "max": 130000
   },
   "uop": {
-    "min": 65000,
-    "max": 95000
+    "min": 70000,
+    "max": 105000
   },
-  "seoDescription": "Sprawdz zarobki Backend C# Developera w Berlinie na rok 2026. Poznaj stawki B2B oraz UOP dla specjalistow .NET w stolicy Niemiec."
+  "seoDescription": "Zarobki Backend C# Developer w Berlinie na rok 2026. Sprawdź aktualne stawki B2B oraz umowy o pracę (UoP) dla programistów C# w stolicy Niemiec."
 }
