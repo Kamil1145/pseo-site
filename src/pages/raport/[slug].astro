@@ -79,6 +79,7 @@ const jsonLdData = {
   cityName={report.city}
   roleName={report.role}
   updatedAt={report.updatedAt}
+  slug={report.slug}
 >
   <!-- Dane strukturalne Schema.org pod SEO -->
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLdData)} />

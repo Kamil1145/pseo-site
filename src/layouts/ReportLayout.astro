@@ -21,7 +21,7 @@ const {
   cityName, 
   roleName, 
   lang = 'pl',
-  slug = Astro.params.slug || 'default',
+  slug = Astro.params.slug as string,
   minSalary,
   maxSalary,
   currency = 'PLN',
