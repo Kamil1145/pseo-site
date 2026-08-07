@@ -1,5 +1,5 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
 
 interface ReportData {
   slug: string;
@@ -9,7 +9,7 @@ interface ReportData {
 }
 
 const reportFiles = import.meta.glob<{ default?: ReportData } | ReportData>(
-  '../data/reports/*.json',
+  '../../data/reports/*.json',
   { eager: true }
 );
 
@@ -19,16 +19,19 @@ const reports = Object.values(reportFiles)
 ---
 
 <BaseLayout
-  title="Raporty Zarobków IT w Polsce"
-  description="Sprawdź aktualne zarobki programistów w polskich miastach. Raporty wynagrodzeń IT na B2B i UoP."
-  lang="pl"
+  title="IT Salary Reports in Poland"
+  description="Check current developer salaries in Polish cities. IT salary reports for B2B and employment contracts."
+  lang="en"
+  canonical="https://devsalaries.co/en/"
+  urlPL="https://devsalaries.co/"
+  urlEN="https://devsalaries.co/en/"
 >
-  <h1 class="text-3xl font-bold mb-2">Raporty Wynagrodzeń IT w Polsce</h1>
-  <p class="text-slate-500 mb-8">Aktualne dane o zarobkach dla {reports.length} ról i miast</p>
+  <h1 class="text-3xl font-bold mb-2">IT Salary Reports in Poland</h1>
+  <p class="text-slate-500 mb-8">Current salary data for {reports.length} roles and cities</p>
   <div class="grid gap-4 md:grid-cols-2">
     {reports.map((report) => (
       <a
-        href={`/raport/${report.slug}`}
+        href={`/en/report/${report.slug}`}
         class="block p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg hover:border-indigo-500 transition shadow-sm"
       >
         <h2 class="font-bold text-lg text-slate-900 dark:text-slate-100">

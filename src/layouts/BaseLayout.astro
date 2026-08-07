@@ -1,0 +1,71 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  lang?: 'pl' | 'en';
+  canonical?: string;
+  urlPL?: string;
+  urlEN?: string;
+}
+
+const {
+  title,
+  description = '',
+  lang = 'pl',
+  canonical,
+  urlPL = 'https://devsalaries.co/',
+  urlEN = 'https://devsalaries.co/en/',
+} = Astro.props;
+
+const baseUrl = Astro.site?.origin || 'https://devsalaries.co';
+const canonicalURL = canonical ?? (lang === 'en' ? urlEN : urlPL);
+
+const copyright = lang === 'en' ? 'All rights reserved.' : 'Wszystkie prawa zastrzeżone.';
+const navLabel = lang === 'en' ? 'Salary Reports' : 'Raporty wynagrodzeń';
+---
+
+<!DOCTYPE html>
+<html lang={lang}>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title} | DevSalaries.co</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonicalURL} />
+  <link rel="alternate" hreflang="pl" href={urlPL} />
+  <link rel="alternate" hreflang="en" href={urlEN} />
+  <link rel="alternate" hreflang="x-default" href={urlPL} />
+  <slot name="head" />
+</head>
+
+<body class="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col dark:bg-slate-950 dark:text-slate-100">
+
+  <header class="border-b border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800">
+    <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+      <a href={lang === 'en' ? '/en/' : '/'} class="font-bold text-xl tracking-tight text-indigo-600 dark:text-indigo-400">
+        devsalaries<span class="text-slate-400">.co</span>
+      </a>
+      <nav aria-label="Główna nawigacja" class="flex items-center gap-4 text-sm font-medium text-slate-600 dark:text-slate-400">
+        <a href={lang === 'en' ? '/en/' : '/'} class="hover:text-indigo-600 transition-colors">{navLabel}</a>
+        <div class="flex items-center gap-1.5 pl-2 border-l border-slate-200 dark:border-slate-700 text-xs font-semibold">
+          <a href={urlPL} class={`px-1.5 py-0.5 rounded ${lang === 'pl' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300' : 'hover:text-indigo-600'}`}>PL</a>
+          <a href={urlEN} class={`px-1.5 py-0.5 rounded ${lang === 'en' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300' : 'hover:text-indigo-600'}`}>EN</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-10">
+    <slot />
+  </main>
+
+  <footer class="border-t border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800 py-6 mt-12">
+    <div class="max-w-5xl mx-auto px-4 text-center text-xs text-slate-500 dark:text-slate-400">
+      <p>&copy; {new Date().getFullYear()} devsalaries.co &bull; {copyright}</p>
+    </div>
+  </footer>
+
+</body>
+</html>
