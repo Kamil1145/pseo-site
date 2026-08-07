@@ -1,0 +1,98 @@
+---
+import ReportLayout from '../../../layouts/ReportLayout.astro';
+import CurrencySwitcher from '../../../components/CurrencySwitcher.astro';
+import { fetchExchangeRates, convertPLN, formatCurrency } from '../../../utils/currency';
+
+export interface ReportData {
+  slug: string;
+  role: string;
+  city: string;
+  updatedAt: string;
+  b2b: { min: number; max: number };
+  uop: { min: number; max: number };
+  seoDescription: string;
+}
+
+export async function getStaticPaths() {
+  const reportFiles = import.meta.glob<Record<string, any>>(
+    '../../../data/reports/*.json',
+    { eager: true }
+  );
+
+  const rates = await fetchExchangeRates();
+
+  return Object.entries(reportFiles).map(([filePath, module]) => {
+    const report = (module && 'default' in module ? module.default : module) as ReportData;
+    const fallbackSlug = filePath.split('/').pop()?.replace('.json', '') || '';
+    const slug = report?.slug || fallbackSlug;
+
+    const minPLN = report.b2b.min;
+    const maxPLN = report.b2b.max;
+
+    const minEur = convertPLN(minPLN, rates.EUR);
+    const maxEur = convertPLN(maxPLN, rates.EUR);
+    const minUsd = convertPLN(minPLN, rates.USD);
+    const maxUsd = convertPLN(maxPLN, rates.USD);
+
+    const eurFormatted = `${formatCurrency(minEur, 'EUR')} - ${formatCurrency(maxEur, 'EUR')}`;
+    const usdFormatted = `${formatCurrency(minUsd, 'USD')} - ${formatCurrency(maxUsd, 'USD')}`;
+    const plnFormatted = `${formatCurrency(minPLN, 'PLN')} - ${formatCurrency(maxPLN, 'PLN')}`;
+
+    return {
+      params: { slug },
+      props: {
+        report,
+        rates,
+        converted: { eurFormatted, usdFormatted, plnFormatted, minEur, maxEur },
+      },
+    };
+  });
+}
+
+interface Props {
+  report: ReportData;
+  rates: { EUR: number; USD: number };
+  converted: {
+    eurFormatted: string;
+    usdFormatted: string;
+    plnFormatted: string;
+    minEur: number;
+    maxEur: number;
+  };
+}
+
+const { report, rates, converted } = Astro.props;
+---
+
+<ReportLayout
+  title={`${report.role} Salary in ${report.city}, Poland`}
+  description={`Average salary for ${report.role} in ${report.city}. Ranges from ${converted.eurFormatted} (${converted.plnFormatted}).`}
+  cityName={report.city}
+  roleName={report.role}
+  lang="en"
+  slug={report.slug}
+  minSalary={converted.minEur}
+  maxSalary={converted.maxEur}
+  currency="EUR"
+>
+  <div class="my-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <span class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Average Monthly Rate</span>
+        <h3 class="text-lg font-medium text-slate-800 dark:text-slate-200">{report.role}</h3>
+      </div>
+
+      <!-- Przełącznik walut (EUR / USD / PLN) z zachowaniem SSG -->
+      <CurrencySwitcher
+        eur={converted.eurFormatted}
+        usd={converted.usdFormatted}
+        pln={converted.plnFormatted}
+        defaultCurrency="EUR"
+      />
+    </div>
+  </div>
+
+  <p class="text-xs text-slate-400 italic mt-2">
+    * Converted at build-time NBP exchange rates: 1 EUR = {rates.EUR.toFixed(2)} PLN, 1 USD = {rates.USD.toFixed(2)} PLN.
+  </p>
+</ReportLayout>

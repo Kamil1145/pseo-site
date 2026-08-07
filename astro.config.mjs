@@ -3,7 +3,14 @@ import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap'; // <--- DODAJ TEN IMPORT
 
 export default defineConfig({
-  site: 'https://devsalaries.co', // Upewnij się, że masz tu wpisany swój adres
+  site: 'https://devsalaries.co', 
+  i18n: {
+    defaultLocale: 'pl',
+    locales: ['pl', 'en'],
+    routing: {
+      prefixDefaultLocale: false, 
+    },
+  },
   integrations: [
     sitemap(),
   ],

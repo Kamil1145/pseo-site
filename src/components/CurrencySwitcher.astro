@@ -1,0 +1,100 @@
+---
+// src/components/CurrencySwitcher.astro
+interface Props {
+  pln: string;
+  eur: string;
+  usd: string;
+  defaultCurrency?: 'EUR' | 'USD' | 'PLN';
+}
+
+const { pln, eur, usd, defaultCurrency = 'EUR' } = Astro.props;
+
+// Ustalenie domyślnego tekstu do wyświetlenia w HTML przed uruchomieniem JS
+const initialValue = defaultCurrency === 'EUR' ? eur : defaultCurrency === 'USD' ? usd : pln;
+---
+
+<div class="currency-widget inline-flex flex-col items-start gap-2">
+  <!-- Przycisk przełączania (UI) -->
+  <div class="inline-flex rounded-md shadow-sm border border-slate-200 dark:border-slate-800 p-1 bg-slate-50 dark:bg-slate-900" role="group">
+    <button
+      type="button"
+      data-currency-btn="EUR"
+      class="currency-btn px-3 py-1 text-xs font-semibold rounded transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+    >
+      EUR (€)
+    </button>
+    <button
+      type="button"
+      data-currency-btn="USD"
+      class="currency-btn px-3 py-1 text-xs font-semibold rounded transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+    >
+      USD ($)
+    </button>
+    <button
+      type="button"
+      data-currency-btn="PLN"
+      class="currency-btn px-3 py-1 text-xs font-semibold rounded transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+    >
+      PLN (zł)
+    </button>
+  </div>
+
+  <!-- Pole z przeliczoną kwotą (widoczne w HTML od razu) -->
+  <span
+    class="currency-display text-2xl font-bold text-indigo-600 dark:text-indigo-400"
+    data-eur={eur}
+    data-usd={usd}
+    data-pln={pln}
+    data-active={defaultCurrency}
+  >
+    {initialValue}
+  </span>
+</div>
+
+<script>
+  function initCurrencySwitchers() {
+    // Odczytaj zapisaną walutę klienta z localStorage lub użyj domyślnej EUR
+    const savedCurrency = localStorage.getItem('preferred_currency') || 'EUR';
+
+    function setCurrency(currency: string) {
+      // 1. Zapisz wybór użytkownika
+      localStorage.setItem('preferred_currency', currency);
+
+      // 2. Zaktualizuj wszystkie elementy wyświetlające kwotę na stronie
+      document.querySelectorAll<HTMLElement>('.currency-display').forEach((el) => {
+        const newValue = el.dataset[currency.toLowerCase() as 'eur' | 'usd' | 'pln'];
+        if (newValue) {
+          el.textContent = newValue;
+          el.dataset.active = currency;
+        }
+      });
+
+      // 3. Zaktualizuj wygląd przycisków
+      document.querySelectorAll<HTMLButtonElement>('[data-currency-btn]').forEach((btn) => {
+        const isActive = btn.dataset.currencyBtn === currency;
+        if (isActive) {
+          btn.classList.add('bg-white', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400', 'shadow-sm');
+          btn.classList.remove('text-slate-600', 'dark:text-slate-400');
+        } else {
+          btn.classList.remove('bg-white', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400', 'shadow-sm');
+          btn.classList.add('text-slate-600', 'dark:text-slate-400');
+        }
+      });
+    }
+
+    // Obsługa kliknięć w przyciski
+    document.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-currency-btn]');
+      if (target && target.dataset.currencyBtn) {
+        setCurrency(target.dataset.currencyBtn);
+      }
+    });
+
+    // Ustawienie waluty przy załadowaniu strony
+    setCurrency(savedCurrency);
+  }
+
+  // Uruchomienie skryptu (wspiera również Astro View Transitions, jeśli są używane)
+  initCurrencySwitchers();
+  document.addEventListener('astro:after-swap', initCurrencySwitchers);
+</script>
